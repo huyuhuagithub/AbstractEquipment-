@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AbstractEquipment.RS232Equipment;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AbstractEquipment
 {
-    public class M2 : AbstractRS232
+    public class ShieldBox : AbstractRS232
     {
         public override void CancelSerialPort(SerialPort serialPort)
         {
@@ -36,8 +37,14 @@ namespace AbstractEquipment
             return serialPort;
         }
 
-        public override string ReadCommand(SerialPort serialPort)
+        public override string Read(SerialPort serialPort)
         {
+            return serialPort.ReadExisting();
+        }
+
+        public override string ReadQuery(SerialPort serialPort,string command)
+        {
+            WriteCommand(serialPort, command);
             return serialPort.ReadExisting();
         }
 
@@ -51,7 +58,6 @@ namespace AbstractEquipment
             {
                 serialPort.WriteLine(command);
             }
-
         }
     }
 }
