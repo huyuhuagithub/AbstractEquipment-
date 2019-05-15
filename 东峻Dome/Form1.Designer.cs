@@ -79,7 +79,7 @@
             this.Datatb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.Datatb.Location = new System.Drawing.Point(6, 30);
-            this.Datatb.MaxLength = 23;
+            this.Datatb.MaxLength = 500;
             this.Datatb.Name = "Datatb";
             this.Datatb.Size = new System.Drawing.Size(776, 21);
             this.Datatb.TabIndex = 2;
@@ -200,7 +200,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(360, 563);
+            this.label1.Location = new System.Drawing.Point(379, 547);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(29, 12);
             this.label1.TabIndex = 7;

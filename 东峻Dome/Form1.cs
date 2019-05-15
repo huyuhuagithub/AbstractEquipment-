@@ -23,16 +23,17 @@ namespace 东峻Dome
         {
             InitializeComponent();
         }
-        bool cancelfalg = false;
+        bool cancelflag = false;
         private void Sendbut_Click(object sender, EventArgs e)
         {
-            CANAbstract USBCAN2I = new USBCAN_2I();
-            CANG(USBCAN2I, Datatb.Text);
+            //CANAbstract USBCAN2I = new USBCAN_2I();
+            //CANG(USBCAN2I, Datatb.Text);
             //List<byte> sbytet = new List<byte> { 160, 151, 12, 12, 19, 255, 01, 00, 02, 03 };
             //Displytb.Text = ConvertFrom.ByteArrayToHexString(sbytet.ToArray());
             //Displytb.Text = ConvertFrom.ByteArrayToString(new byte[] { 48, 49, 50, 51, 52, 53, 65, 66, 67, 68 }, Encoding.ASCII);
             //Displytb.Text = ConvertFrom.HexStringToString("ec a0 45 2d 43 61 72 78", Encoding.ASCII);
-            //string kk = ConvertFrom.HexStringToString("53 58 5F 31 31 5F 42 4F 4F 54 5F 56 32 2E 32 20 00 00 00 00", Encoding.ASCII);
+            string kk = ConvertFrom.HexStringToString(Datatb.Text, Encoding.ASCII);
+            Datatb.Text = kk;
             //string ss = ConvertFrom.StringToHexString(kk, Encoding.ASCII);
             ////dataGridView1.Rows.Add(10);
             ////dataGridView1.Columns.Add(10);
@@ -44,7 +45,7 @@ namespace 东峻Dome
             //    dataGridView1.Rows[s].Cells[3].Value = kk;
             //});
             ////DataGridViewRowCollection sss= dataGridView1.Rows;
-         
+
             //Displytb.Text = ConvertFrom.HexStringToString(ss, Encoding.ASCII);
         }
 
@@ -96,29 +97,28 @@ namespace 东峻Dome
         private void button1_Click(object sender, EventArgs e)
         {
             Displytb.Text = "";
-            cancelfalg = false;
+            cancelflag = false;
             Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
-                Action action = new Action(NewMethod);
-                action.BeginInvoke(callback =>
-                {
-                    action.EndInvoke(callback);
-                    stopwatch.Stop();
-                    long time = stopwatch.ElapsedMilliseconds;
-                    updateLabelUI(label1, time.ToString() + "ms");
-                    button1.Invoke(new Action(() => { button1.Enabled = true; }));
-                }, null);
-                button1.Enabled = false;
-           
+            stopwatch.Start();
+            Action action = new Action(NewMethod);
+            action.BeginInvoke(callback =>
+            {
+                action.EndInvoke(callback);
+                stopwatch.Stop();
+                long time = stopwatch.ElapsedMilliseconds;
+                updateLabelUI(label1, time.ToString() + "ms");
+                button1.Invoke(new Action(() => { button1.Enabled = true; }));
+            }, null);
+            button1.Enabled = false;
         }
 
         private void NewMethod()
         {
             var cancelSource = new CancellationTokenSource();
             
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
-                if (cancelfalg==false)
+                if (cancelflag==false)
                 {
                     CANAbstract USBCAN2I = new USBCAN_2I();
                     CANG(USBCAN2I);
@@ -126,7 +126,7 @@ namespace 东峻Dome
                 else
                 {
                     cancelSource.Cancel();
-                    cancelfalg = true;
+                    cancelflag = true;
                     break;
                 }
             }
@@ -231,7 +231,7 @@ namespace 东峻Dome
 
         private void button2_Click(object sender, EventArgs e)
         {
-            cancelfalg = true;
+            cancelflag = true;
         }
     }
 }

@@ -85,25 +85,30 @@ namespace AbstractEquipment.CANEquipment
                 {
                     UInt32 con_maxlen = 50;
                     int size = Marshal.SizeOf(typeof(VCI_CAN_OBJ));
-                    IntPtr pt = Marshal.AllocHGlobal(size * (Int32)con_maxlen);
-                    UInt32 result = VCI_Receive(deviceType, deviceIndex, cANIndex, pt, con_maxlen, 100);
-                    for (UInt32 i = 0; i < result; i++)
+                    IntPtr pt = Marshal.AllocHGlobal(size * (int)con_maxlen);
+                    uint result = VCI_Receive(deviceType, deviceIndex, cANIndex, pt, con_maxlen, 100);
+                    for (uint i = 0; i < result; i++)
                     {
+                        
                         VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((uint)pt + i * size), typeof(VCI_CAN_OBJ));
                         if (obj.ID == FilterID)
                         {
                             if (obj.RemoteFlag == 0)
                             {
+                                List<uint> temp = new List<uint>();
                                 byte len = (byte)(obj.DataLen % 9);
                                 byte j = 0;
                                 if (j++ < len)
                                 {
                                     for (int d = 0; d < len; d++)
                                     {
-                                        uintlist.Add(obj.Data[d]);
+                                        temp.Add(obj.Data[d]);
                                     }
+                                    temp.RemoveRange(0, 2);//去除CAN协议头俩位数据（东峻专用）
+                                    uintlist.AddRange(temp);
                                 }
                             }
+                         
                         }
                         #region old
                         //string dataStr = string.Empty;
@@ -155,7 +160,7 @@ namespace AbstractEquipment.CANEquipment
                     }
 
                 }
-                //return dataStrList = ConvertFrom.UintArrayToHexString(uintlist.ToArray());
+                uintlist.RemoveRange(0, 2);
                 return dataStrList = ConvertFrom.ToHexString(uintlist.ToArray());
             }
             return dataStrList;
@@ -241,7 +246,7 @@ namespace AbstractEquipment.CANEquipment
         public override string Query(string data, uint filterID, uint deviceType, uint deviceIndex, uint cANIndex ,uint frameid)
         {
            bool b= TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
-            return ReceiveData(filterID, 800, deviceType, deviceIndex, cANIndex);
+            return ReceiveData(filterID, 500, deviceType, deviceIndex, cANIndex);
         }
 
         public override string Read(uint command, uint deviceType, uint deviceIndex, uint cANIndex)
