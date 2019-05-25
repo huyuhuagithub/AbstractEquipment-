@@ -160,8 +160,12 @@ namespace AbstractEquipment.CANEquipment
                     }
 
                 }
-                uintlist.RemoveRange(0, 2);
-                return dataStrList = ConvertFrom.ToHexString(uintlist.ToArray());
+                if (uintlist.Count>0)
+                {
+                    uintlist.RemoveRange(0, 2);
+                    return dataStrList = ConvertFrom.ToHexString(uintlist.ToArray());
+                }
+                
             }
             return dataStrList;
         }
@@ -246,7 +250,7 @@ namespace AbstractEquipment.CANEquipment
         public override string Query(string data, uint filterID, uint deviceType, uint deviceIndex, uint cANIndex ,uint frameid)
         {
            bool b= TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
-            return ReceiveData(filterID, 500, deviceType, deviceIndex, cANIndex);
+            return ReceiveData(filterID, 800, deviceType, deviceIndex, cANIndex);
         }
 
         public override string Read(uint command, uint deviceType, uint deviceIndex, uint cANIndex)

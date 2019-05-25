@@ -26,14 +26,14 @@ namespace 东峻Dome
         bool cancelflag = false;
         private void Sendbut_Click(object sender, EventArgs e)
         {
-            //CANAbstract USBCAN2I = new USBCAN_2I();
-            //CANG(USBCAN2I, Datatb.Text);
+            CANAbstract USBCAN2I = new USBCAN_2I();
+            CANG(USBCAN2I, Datatb.Text);
             //List<byte> sbytet = new List<byte> { 160, 151, 12, 12, 19, 255, 01, 00, 02, 03 };
             //Displytb.Text = ConvertFrom.ByteArrayToHexString(sbytet.ToArray());
             //Displytb.Text = ConvertFrom.ByteArrayToString(new byte[] { 48, 49, 50, 51, 52, 53, 65, 66, 67, 68 }, Encoding.ASCII);
             //Displytb.Text = ConvertFrom.HexStringToString("ec a0 45 2d 43 61 72 78", Encoding.ASCII);
-            string kk = ConvertFrom.HexStringToString(Datatb.Text, Encoding.ASCII);
-            Datatb.Text = kk;
+            //string kk = ConvertFrom.HexStringToString(Datatb.Text, Encoding.ASCII);
+            //Datatb.Text = kk;
             //string ss = ConvertFrom.StringToHexString(kk, Encoding.ASCII);
             ////dataGridView1.Rows.Add(10);
             ////dataGridView1.Columns.Add(10);
