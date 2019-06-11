@@ -52,6 +52,7 @@ namespace AbstractEquipment.CANEquipment
             public fixed byte Reserved[3];
 
         }
+
         #region DLL 
         [DllImport("controlcan.dll")]
         static protected extern UInt32 VCI_OpenDevice(UInt32 DevicesType, UInt32 DevicesIndex, UInt32 Reserved);
@@ -213,7 +214,6 @@ namespace AbstractEquipment.CANEquipment
             VCI_CloseDevice(DeviceIndex, DeviceIndex);
             VCI_ResetCAN(DeviceType, DeviceIndex, CANIndex);
         }
-
         public override bool initializeCAN(uint DeviceType, uint DeviceIndex, uint CANIndex, byte baudratio)
         {
             try
@@ -246,18 +246,15 @@ namespace AbstractEquipment.CANEquipment
                 throw new Exception(ex + "初始化CAN 失败");
             }
         }
-
         public override string Query(string data, uint filterID, uint deviceType, uint deviceIndex, uint cANIndex ,uint frameid)
         {
            bool b= TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
-            return ReceiveData(filterID, 800, deviceType, deviceIndex, cANIndex);
+            return ReceiveData(filterID, 400, deviceType, deviceIndex, cANIndex);
         }
-
         public override string Read(uint command, uint deviceType, uint deviceIndex, uint cANIndex)
         {
            return ReceiveData(command, 500, deviceType, deviceIndex, cANIndex);
         }
-
         public override void Write(string data, uint deviceType, uint deviceIndex, uint cANIndex, uint frameid)
         {
             TransmitData(data,  deviceType,  deviceIndex,  cANIndex, frameid);

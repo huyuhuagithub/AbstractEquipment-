@@ -5,12 +5,19 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Configuration;
 namespace BaseModule.Helper
 {
     class SqlHelper
     {
-        public static T Get<T>(string connstr, int id) where T : class
+        static string connstr = ConfigurationManager.ConnectionStrings["connStr"].ConnectionString;
+        /// <summary>
+        /// 查询单行实体数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static T GetEntity<T>(int id) 
         {
             Type type = typeof(T);
             object inst = Activator.CreateInstance(type);
@@ -25,13 +32,43 @@ namespace BaseModule.Helper
                 {
                     foreach (var item in type.GetProperties())
                     {
+                        if (reader[item.Name]==null)
+                        {
+                            item.SetValue(inst, null);
+                        }
                         item.SetValue(inst, reader[item.Name]);
                     }
                 }
             }
             return (T)inst;
         }
-
+        public static IEnumerable<T> GetALLEntity<T>()
+        {
+            Type type = typeof(T);
+            List<T> EntityallList = new List<T>();
+            string cloumestr = string.Join(",", type.GetProperties().Select(p => string.Format("[{0}]", p.Name)));
+            string sql = string.Format($"SELECT {cloumestr} FROM {type.Name}");
+            using (SqlConnection conn = new SqlConnection(connstr))
+            {
+                SqlCommand command = new SqlCommand(sql, conn);
+                conn.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())//表示有数据  开始读
+                {
+                    object inst = Activator.CreateInstance(type);//创建对象
+                    foreach (var item in type.GetProperties())
+                    {
+                        if (reader[item.Name] == null)
+                        {
+                            item.SetValue(inst, null);
+                        }
+                        item.SetValue(inst, reader[item.Name]);
+                    }
+                    EntityallList.Add((T)inst);
+                }
+            }
+            return EntityallList;
+        }
         public static int ExecuteNonQuery(String connectionString, String commandText,
          CommandType commandType, params SqlParameter[] parameters)
         {
