@@ -46,6 +46,7 @@
     <Compile Include="ABTECAudioAnalyzeEquipment\ATCAbstract.cs" />
     <Compile Include="CANEquipment\CANAbstract.cs" />
     <Compile Include="CANEquipment\USBCAN-2I.cs" />
+    <Compile Include="DataBaseAbstract\IBaseDAL.cs" />
     <Compile Include="GPIB488Equipment\Agilent_66319D.cs" />
     <Compile Include="GPIB488Equipment\Anritsu_MT8852B.cs" />
     <Compile Include="GPIB488Equipment\GPIBAbstract.cs" />

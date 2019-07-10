@@ -5,12 +5,16 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace BaseModule.Helper
 {
+
     class SqlHelper
     {
-        public static T Get<T>(string connstr, int id) where T : class
+        static string connstr = ConfigurationManager.ConnectionStrings["connstr"].ConnectionString;
+        //select [cloums] from [table] where id= [id]
+        public static T QueryById<T>(int id)
         {
             Type type = typeof(T);
             object inst = Activator.CreateInstance(type);
@@ -25,12 +29,82 @@ namespace BaseModule.Helper
                 {
                     foreach (var item in type.GetProperties())
                     {
+                        if (reader[item.Name] is DBNull)//判断数据库读回来的值是否为可空类型
+                        {
+                            item.SetValue(inst, null);
+                        }
                         item.SetValue(inst, reader[item.Name]);
                     }
                 }
             }
             return (T)inst;
         }
+
+        //select [cloums] from [table]
+        public static IEnumerable<T> QueryByList<T>()
+        {
+            Type type = typeof(T);
+            List<T> datalist = new List<T>();
+            string cloums = string.Join(",", type.GetProperties().Select(p => string.Format($"[{p.Name}]")));
+            string sql = string.Format($"Select {cloums} from {type.Name}");
+            using (SqlConnection conn = new SqlConnection(connstr))
+            {
+                conn.Open();
+                SqlCommand command = new SqlCommand(sql, conn);
+                SqlDataReader read = command.ExecuteReader();
+                while (read.Read())
+                {
+                    object obj = Activator.CreateInstance(type);
+                    foreach (var item in type.GetProperties())
+                    {
+                        if (read[type.Name] is DBNull)
+                        {
+                            item.SetValue(obj, null);
+                        }
+                        item.SetValue(obj, read[type.Name]);
+                    }
+                    datalist.Add((T)obj);
+                }
+            }
+            return datalist;
+        }
+
+        // delete  from [table] where id=[]
+        public static bool DeleteById<T>(int id)
+        {
+            Type type = typeof(T);
+            string sql = string.Format($"delete [{type.Name}] where id={id}");
+            using (SqlConnection conn = new SqlConnection(connstr))
+            {
+                conn.Open();
+                SqlCommand command = new SqlCommand(sql, conn);
+                return command.ExecuteNonQuery() > 0;
+            }
+        }
+
+        // insert into [table] (cloum1,cloum1) Value (value1,value2)
+        public static bool Insert<T>(T t)
+        {
+            Type type = typeof(T);
+            string cloums = string.Join(",", type.GetProperties().Select(p => string.Format($"[{p.Name}]")));
+            string values = string.Join(",", type.GetProperties().Select(p => string.Format($"@{p.Name}")));
+
+            string sql = string.Format($"insert into [{type.Name}] ({cloums}) Value ({values})");
+            using (SqlConnection conn = new SqlConnection(connstr))
+            {
+                conn.Open();
+                SqlCommand command = new SqlCommand(sql, conn);
+                SqlParameter[] sqlParameters = type.GetProperties().
+                    Select(p => new SqlParameter($"@{type.Name}", p.GetValue(t) ?? DBNull.Value)).ToArray();
+                command.Parameters.AddRange(sqlParameters);
+                return command.ExecuteNonQuery() > 0;
+            }
+
+        }
+
+
+
+
 
         public static int ExecuteNonQuery(String connectionString, String commandText,
          CommandType commandType, params SqlParameter[] parameters)

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "东峻Dome", "东峻Dome\�
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp2", "ConsoleApp2\ConsoleApp2.csproj", "{36F9D9C2-09AA-46E4-96C7-F86952068841}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries.Project", "Libraries.Project", "{264568CA-06A7-4476-8EBA-FEB77B4F38C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C93904A8-BE4C-4061-9317-82AF28EF0518} = {264568CA-06A7-4476-8EBA-FEB77B4F38C9}
+		{56FDD073-8432-4E21-82E8-B59727827BCA} = {264568CA-06A7-4476-8EBA-FEB77B4F38C9}
+		{36F9D9C2-09AA-46E4-96C7-F86952068841} = {264568CA-06A7-4476-8EBA-FEB77B4F38C9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8D3712A9-2BE3-40CE-B399-B971A49E5BD3}

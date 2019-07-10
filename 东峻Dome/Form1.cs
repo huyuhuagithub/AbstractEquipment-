@@ -29,6 +29,7 @@ namespace 东峻Dome
         bool cancelflag = false;
         private void Sendbut_Click(object sender, EventArgs e)
         {
+
             CANAbstract USBCAN2I = new USBCAN_2I();
             CANG(USBCAN2I, Datatb.Text);
             #region 123
@@ -261,8 +262,34 @@ namespace 东峻Dome
             {
                 bt001.CancelSerialPort(serialPortbt);
                 Button3_Click(1, new EventArgs());
-             
+
             }
+        }
+
+        private void Button4_Click(object sender, EventArgs e)
+        {
+            string value = "02 25 03 14 05 2B 06 2B 09 27 0C 26 11 2E 13 2A 17 28 1C 25 43 00 44 00 00 00 00 00";
+            bool b = Satellite(value);
+        }
+
+        private static bool Satellite(string value)
+        {
+            List<byte> listvar = ConvertFrom.HexstringToBytesArray(value);
+            List<byte> Satelliteindex = new List<byte>();
+            List<int> Strength = new List<int>();
+            var newlist = listvar.Select((b, index) => new { index, b });//投影出index
+            foreach (var item in newlist)
+            {
+                if (item.index % 2 == 1)
+                {
+                    Strength.Add(item.b);
+                }
+                else
+                {
+                    Satelliteindex.Add(item.b);
+                }
+            }
+            return Strength.Where(i => i > 21).Count() >= 7;
         }
     }
 }
