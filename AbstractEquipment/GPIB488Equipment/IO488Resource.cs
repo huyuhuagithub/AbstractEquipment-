@@ -10,6 +10,7 @@ namespace AbstractEquipment.GPIB488Equipment
     public class IO488Resource
     {
         private FormattedIO488 visaGPIB = new FormattedIO488();
+      
 
         public void Visa_GPIBOpen(string GPIBAddr)
         {

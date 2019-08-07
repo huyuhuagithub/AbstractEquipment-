@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using BaseModule.Helper.ConvertFrom;
 namespace AbstractEquipment.CANEquipment
 {
-   public class USBCAN_2I : CANAbstract
+    public class USBCAN_2I : CANAbstract
     {
 
         protected struct VCI_INIT_CONFIG
@@ -90,8 +90,9 @@ namespace AbstractEquipment.CANEquipment
                     uint result = VCI_Receive(deviceType, deviceIndex, cANIndex, pt, con_maxlen, 100);
                     for (uint i = 0; i < result; i++)
                     {
-                        
-                        VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((uint)pt + i * size), typeof(VCI_CAN_OBJ));
+
+                        //VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((uint)pt + i * size), typeof(VCI_CAN_OBJ));
+                        VCI_CAN_OBJ obj = Marshal.PtrToStructure<VCI_CAN_OBJ>((IntPtr)((uint)pt + i * size));
                         if (obj.ID == FilterID)
                         {
                             if (obj.RemoteFlag == 0)
@@ -109,7 +110,7 @@ namespace AbstractEquipment.CANEquipment
                                     uintlist.AddRange(temp);
                                 }
                             }
-                         
+
                         }
                         #region old
                         //string dataStr = string.Empty;
@@ -161,12 +162,12 @@ namespace AbstractEquipment.CANEquipment
                     }
 
                 }
-                if (uintlist.Count>0)
+                if (uintlist.Count > 0)
                 {
                     uintlist.RemoveRange(0, 2);
                     return dataStrList = ConvertFrom.ToHexString(uintlist.ToArray());
                 }
-                
+
             }
             return dataStrList;
         }
@@ -246,19 +247,19 @@ namespace AbstractEquipment.CANEquipment
                 throw new Exception(ex + "初始化CAN 失败");
             }
         }
-        public override string Query(string data, uint filterID, uint deviceType, uint deviceIndex, uint cANIndex ,uint frameid)
+        public override string Query(string data, uint filterID, uint deviceType, uint deviceIndex, uint cANIndex, uint frameid)
         {
-           bool b= TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
-            return ReceiveData(filterID, 400, deviceType, deviceIndex, cANIndex);
+            bool b = TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
+            return ReceiveData(filterID, 500, deviceType, deviceIndex, cANIndex);
         }
         public override string Read(uint command, uint deviceType, uint deviceIndex, uint cANIndex)
         {
-           return ReceiveData(command, 500, deviceType, deviceIndex, cANIndex);
+            return ReceiveData(command, 500, deviceType, deviceIndex, cANIndex);
         }
         public override void Write(string data, uint deviceType, uint deviceIndex, uint cANIndex, uint frameid)
         {
-            TransmitData(data,  deviceType,  deviceIndex,  cANIndex, frameid);
+            TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
         }
-        
+
     }
 }
