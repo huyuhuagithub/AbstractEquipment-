@@ -5,20 +5,12 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Configuration;
+
 namespace BaseModule.Helper
 {
-    public class SQLHelper
+    class SqlHelper
     {
-        static string connstring = ConfigurationManager.ConnectionStrings["connstring"].ConnectionString;
-
-        /// <summary>
-        /// 获取实体单行数据
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static T GetT<T>(int id)
+        public static T Get<T>(string connstr, int id) where T : class
         {
             Type type = typeof(T);
             object obj = Activator.CreateInstance(type);
@@ -33,45 +25,27 @@ namespace BaseModule.Helper
                 {
                     foreach (var item in type.GetProperties())
                     {
-                        if (reader[item.Name] is DBNull)
-                        {
-                            item.SetValue(obj, null);
-                        }
-                        item.SetValue(obj, reader[item.Name]);
+                        item.SetValue(inst, reader[item.Name]);
                     }
                 }
             }
-            return (T)obj;
+            return (T)inst;
         }
 
-        /// <summary>
-        /// 获取实体列表数据
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public static IEnumerable<T> GetEntitylist<T>() where T : BaseModel
+        public static int ExecuteNonQuery(String connectionString, String commandText,
+         CommandType commandType, params SqlParameter[] parameters)
         {
-            Type type = typeof(T);
-            string cloumsstring = string.Join(",", type.GetProperties().Select(p => string.Format($"[{p.Name}]")));
-            string sqlString = string.Format($"select {cloumsstring} from {type.Name}");
-            List<T> datalist = new List<T>();
-            using (SqlConnection conn = new SqlConnection(connstring))
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                conn.Open();
-                SqlCommand command = new SqlCommand(sqlString, conn);
-                SqlDataReader read = command.ExecuteReader();
-                while (read.Read())
+                using (SqlCommand cmd = new SqlCommand(commandText, conn))
                 {
-                    var t = Activator.CreateInstance(type);
-                    foreach (var item in type.GetProperties())
-                    {
-                        if (read[item.Name] is DBNull)
-                        {
-                            item.SetValue(t, null);
-                        }
-                        item.SetValue(t, read[item.Name]);
-                    }
-                    datalist.Add(t as T);
+                    // There're three command types: StoredProcedure, Text, TableDirect. The TableDirect   
+                    // type is only for OLE DB.    
+                    cmd.CommandType = commandType;
+                    cmd.Parameters.AddRange(parameters);
+
+                    conn.Open();
+                    return cmd.ExecuteNonQuery();
                 }
             }
             return datalist;

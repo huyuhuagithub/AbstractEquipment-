@@ -12,10 +12,14 @@ namespace 东峻Dome
     {
         public static T Create<T>() where T : test
         {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                $"ConfigFiles\\{typeof(T).Name}.json");
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"ConfigFiles\\");
 
-            string info = File.ReadAllText(path);
+            string pathlog = Path.Combine(path,$"{typeof(T).Name}.json");
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            string info = File.ReadAllText(pathlog);
             T model = JsonHelper.JsonToObj<T>(info);
             return model;
         }

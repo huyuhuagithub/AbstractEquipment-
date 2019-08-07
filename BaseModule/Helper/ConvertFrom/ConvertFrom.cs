@@ -144,5 +144,20 @@ namespace BaseModule.Helper.ConvertFrom
             text = text.Trim();
             return text;
         }
+
+
+        public static List<byte> HexstringToBytesArray(string command)
+        {
+            List<byte> list = new List<byte>();
+            string[] array = command.Split(new char[]
+            {
+                ' '
+            });
+            for (int i = 0; i < array.Length; i++)
+            {
+                list.Add(Convert.ToByte(array[i], 16));
+            }
+            return list;
+        }
     }
 }

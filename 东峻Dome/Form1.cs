@@ -4,18 +4,21 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AbstractEquipment;
 using AbstractEquipment.CANEquipment;
+using AbstractEquipment.RS232Equipment;
 using BaseModule.Helper;
 using BaseModule.Helper.ConvertFrom;
 
 namespace 东峻Dome
 {
-  
+
 
     public partial class Form1 : Form
     {
@@ -26,8 +29,10 @@ namespace 东峻Dome
         bool cancelflag = false;
         private void Sendbut_Click(object sender, EventArgs e)
         {
+
             CANAbstract USBCAN2I = new USBCAN_2I();
             CANG(USBCAN2I, Datatb.Text);
+            #region 123
             //List<byte> sbytet = new List<byte> { 160, 151, 12, 12, 19, 255, 01, 00, 02, 03 };
             //Displytb.Text = ConvertFrom.ByteArrayToHexString(sbytet.ToArray());
             //Displytb.Text = ConvertFrom.ByteArrayToString(new byte[] { 48, 49, 50, 51, 52, 53, 65, 66, 67, 68 }, Encoding.ASCII);
@@ -47,11 +52,12 @@ namespace 东峻Dome
             ////DataGridViewRowCollection sss= dataGridView1.Rows;
 
             //Displytb.Text = ConvertFrom.HexStringToString(ss, Encoding.ASCII);
+            #endregion
         }
 
-        public  string CANG<T>(T t, uint deviceType = 4, uint deviceIndex = 0, uint cANIndex = 0) where T : CANAbstract
+        public string CANG<T>(T t, uint deviceType = 4, uint deviceIndex = 0, uint cANIndex = 0) where T : CANAbstract
         {
-            string dataResult="";
+            string dataResult = "";
             test test = new test();
             test = TestobjectFactor.Create<test>();
             if (t.initializeCAN(deviceType, deviceIndex, cANIndex, 0X1C))
@@ -77,7 +83,7 @@ namespace 东峻Dome
                 return "初始化失败!";
             }
         }
-        public void CANG<T>(T t,string data, uint deviceType = 4, uint deviceIndex = 0, uint cANIndex = 0) where T : CANAbstract
+        public void CANG<T>(T t, string data, uint deviceType = 4, uint deviceIndex = 0, uint cANIndex = 0) where T : CANAbstract
         {
             string dataResult = "";
             if (t.initializeCAN(deviceType, deviceIndex, cANIndex, 0X1C))
@@ -115,10 +121,10 @@ namespace 东峻Dome
         private void NewMethod()
         {
             var cancelSource = new CancellationTokenSource();
-            
+
             for (int i = 0; i < 100; i++)
             {
-                if (cancelflag==false)
+                if (cancelflag == false)
                 {
                     CANAbstract USBCAN2I = new USBCAN_2I();
                     CANG(USBCAN2I);
@@ -210,7 +216,7 @@ namespace 东峻Dome
             }));
         }
 
-        public void updatedataGridViewUI(DataGridView datedataGridView, string text,int row,int cell)
+        public void updatedataGridViewUI(DataGridView datedataGridView, string text, int row, int cell)
         {
             datedataGridView.Invoke(new Action(() =>
             {
@@ -232,6 +238,58 @@ namespace 东峻Dome
         private void button2_Click(object sender, EventArgs e)
         {
             cancelflag = true;
+        }
+
+        private void Button3_Click(object sender, EventArgs e)
+        {
+            Action action = scan;
+            action.BeginInvoke(null, null);
+
+        }
+
+        private void scan()
+        {
+            AbstractRS232 bt001 = new ES4600AT();
+            SerialPort serialPortbt = bt001.initializeRS232("COM7", 9600, "\r\n");
+            try
+            {
+                string data = bt001.ReadQuery(serialPortbt, "16 54 0d");
+                bt001.CancelSerialPort(serialPortbt);
+                label2.Invoke(new Action(() => { label2.Text = data; }));
+                WriteLog.WriteLogFile(data + "\r\n");
+            }
+            catch (TimeoutException ex)
+            {
+                bt001.CancelSerialPort(serialPortbt);
+                Button3_Click(1, new EventArgs());
+
+            }
+        }
+
+        private void Button4_Click(object sender, EventArgs e)
+        {
+            string value = "02 25 03 14 05 2B 06 2B 09 27 0C 26 11 2E 13 2A 17 28 1C 25 43 00 44 00 00 00 00 00";
+            bool b = Satellite(value);
+        }
+
+        private static bool Satellite(string value)
+        {
+            List<byte> listvar = ConvertFrom.HexstringToBytesArray(value);
+            List<byte> Satelliteindex = new List<byte>();
+            List<int> Strength = new List<int>();
+            var newlist = listvar.Select((b, index) => new { index, b });//投影出index
+            foreach (var item in newlist)
+            {
+                if (item.index % 2 == 1)
+                {
+                    Strength.Add(item.b);
+                }
+                else
+                {
+                    Satelliteindex.Add(item.b);
+                }
+            }
+            return Strength.Where(i => i > 21).Count() >= 7;
         }
     }
 }

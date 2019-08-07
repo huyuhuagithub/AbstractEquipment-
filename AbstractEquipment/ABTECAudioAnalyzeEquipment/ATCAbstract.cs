@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ATCAPI;
+//using ATCAPI;
 namespace AbstractEquipment.ABTECAudioAnalyzeEquipment
 {
    public class ATCAbstract
     {
-        ATC aTC = new ATC(false);
+        //ATC aTC = new ATC(false);
 
         
         public void m<T>( )

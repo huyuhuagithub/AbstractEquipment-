@@ -90,9 +90,8 @@ namespace AbstractEquipment.CANEquipment
                     uint result = VCI_Receive(deviceType, deviceIndex, cANIndex, pt, con_maxlen, 100);
                     for (uint i = 0; i < result; i++)
                     {
-
-                        //VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((uint)pt + i * size), typeof(VCI_CAN_OBJ));
-                        VCI_CAN_OBJ obj = Marshal.PtrToStructure<VCI_CAN_OBJ>((IntPtr)((uint)pt + i * size));
+                        
+                        VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((uint)pt + i * size), typeof(VCI_CAN_OBJ));
                         if (obj.ID == FilterID)
                         {
                             if (obj.RemoteFlag == 0)
@@ -185,7 +184,7 @@ namespace AbstractEquipment.CANEquipment
                     ExternFlag = 0,//是否是扩展帧。
                     TimeFlag = 1//是否使用时间标识，为 1 时 TimeStamp 有效，TimeFlag 和 TimeStamp 只在此帧为接收帧时有意义
                 };
-                String strdata = Data;
+                string strdata = Data;
                 int len = (strdata.Length + 1) / 3;
                 List<byte> bytelist = new List<byte>();
                 for (int t = 0; t < len; t++)
@@ -207,9 +206,6 @@ namespace AbstractEquipment.CANEquipment
         {
             uint i = VCI_ResetCAN(DeviceType, DeviceIndex, CANIndex);
         }
-
-
-
         public override void CancelCAN(uint DeviceType, uint DeviceIndex, uint CANIndex)
         {
             VCI_CloseDevice(DeviceIndex, DeviceIndex);
@@ -227,8 +223,8 @@ namespace AbstractEquipment.CANEquipment
                     Reserved = 0,           //保留位
                     Filter = 1,             //滤波方式，1 表示单滤波，0 表示双滤波
                     Mode = 0,               //模式，0 表示正常模式，1 表示只听模式
-                    Timing0 = 0,
-                    Timing1 = baudratio          //设置波特率
+                    Timing0 = 0,            //设置波特率    
+                    Timing1 = baudratio     //设置波特率
                 };
                 UInt32 ss = VCI_InitCAN(DeviceType, DeviceIndex, CANIndex, ref _CONFIG);
                 if (ss != 0)
@@ -249,12 +245,13 @@ namespace AbstractEquipment.CANEquipment
         }
         public override string Query(string data, uint filterID, uint deviceType, uint deviceIndex, uint cANIndex, uint frameid)
         {
-            bool b = TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
-            return ReceiveData(filterID, 500, deviceType, deviceIndex, cANIndex);
+           bool b= TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
+            return ReceiveData(filterID, 800, deviceType, deviceIndex, cANIndex);
         }
+
         public override string Read(uint command, uint deviceType, uint deviceIndex, uint cANIndex)
         {
-            return ReceiveData(command, 500, deviceType, deviceIndex, cANIndex);
+           return ReceiveData(command, 500, deviceType, deviceIndex, cANIndex);
         }
         public override void Write(string data, uint deviceType, uint deviceIndex, uint cANIndex, uint frameid)
         {

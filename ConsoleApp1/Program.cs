@@ -10,10 +10,10 @@ using System.Threading;
 using AbstractEquipment.RS232Equipment;
 using BaseModule.Helper;
 using AbstractEquipment.GPIB488Equipment;
-using Ivi.Visa.Interop;
+
 using System.IO;
 using AbstractEquipment.ABTECAudioAnalyzeEquipment;
-using ATCAPI;
+
 namespace ConsoleApp11
 {
     class Program
@@ -27,18 +27,18 @@ namespace ConsoleApp11
             //m2.WriteCommand(serialPortm2, "Power_DC_OUT 3 1");
             //m2.CancelSerialPort(serialPortm2);
 
-            AbstractRS232 bt001 = new BT001();
-            SerialPort serialPortbt = bt001.initializeRS232("COM4", 115200, "\r\n");
+            AbstractRS232 bt001 = new ES4600AT();
+            SerialPort serialPortbt = bt001.initializeRS232("COM7", 9600, "\r\n");
 
-            string d = bt001.ReadQuery(serialPortbt, "AT+SCON=000D1909A543");
-            d += bt001.ReadQuery(serialPortbt, "AT+SCON=000D1909A543");
+            string d = bt001.ReadQuery(serialPortbt, "16 54 0d");
+            //d += bt001.ReadQuery(serialPortbt, "AT+SCON=000D1909A543");
             //d += bt001.ReadQuery(serialPortbt, "AT+SCON=000D1909A543");
             //d += bt001.ReadQuery(serialPortbt, "AT+SCON=000D1909A543");
             //d += bt001.ReadQuery(serialPortbt, "AT+SCON=000D1909A543");
             //d += bt001.ReadQuery(serialPortbt, "AT+SCON=000D1909A543");
             //d += bt001.ReadQuery(serialPortbt, "AT+SCON=000D1909A543");
             Console.WriteLine(d);
-            bt001.CancelSerialPort(serialPortbt);
+            //bt001.CancelSerialPort(serialPortbt);
 
             //AbstractRS232 m2 = new M2();
 
@@ -54,7 +54,7 @@ namespace ConsoleApp11
             #endregion
 
             #region canDome
-            CANAbstract USBCAN2I = new USBCAN_2I();
+            //CANAbstract USBCAN2I = new USBCAN_2I();
 
             //WriteLog.ConsoleWritelog("查询开机完成\r\n" + CANG(USBCAN2I, "11 B5 00 00 00 00 00 00"));
             //WriteLog.ConsoleWritelog("查询硬件版本信息\r\n" + CANG(USBCAN2I, "11 12 01 01 00 00 00 00"));
@@ -89,7 +89,7 @@ namespace ConsoleApp11
             #endregion
 
             #region ATCDome
-            ATCAbstract aTC = new ATCAbstract();
+            //ATCAbstract aTC = new ATCAbstract();
             
             #endregion
             Console.ReadLine();
@@ -124,31 +124,31 @@ namespace ConsoleApp11
         //    return dataResult;
         //}
 
-        public static string GPIBG<T>(T t, string data, string addr) where T : GPIBAbstract
-        {
-            string dataResult;
-            FormattedIO488 formattedIO488 = t.initializeGPIB(addr);
-            dataResult = t.Visa_GPIBQuery(formattedIO488, data);
-            t.Visa_GPIBClose(formattedIO488);
-            return dataResult;
-        }
+        //public static string GPIBG<T>(T t, string data, string addr) where T : GPIBAbstract
+        //{
+        //    string dataResult;
+        //    FormattedIO488 formattedIO488 = t.initializeGPIB(addr);
+        //    dataResult = t.Visa_GPIBQuery(formattedIO488, data);
+        //    t.Visa_GPIBClose(formattedIO488);
+        //    return dataResult;
+        //}
 
 
-        public static T Create<T>() where T : atcdata
-        {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
-                $"ConfigFiles\\{typeof(T).Name}.json");
+       // public static T Create<T>() where T : atcdata
+       // {
+       //     string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+       //         $"ConfigFiles\\{typeof(T).Name}.json");
 
-            string info = File.ReadAllText(path);
-            T model = JsonHelper.JsonToObj<T>(info);
-            return model;
-        }
-       public class atcdata
-        {
-            public DateTime dateTime { get; set; }
-            public double [] xValue { get; set; }
-            public double [] yValue { get; set; }
+       //     string info = File.ReadAllText(path);
+       //     T model = JsonHelper.JsonToObj<T>(info);
+       //     return model;
+       // }
+       //public class atcdata
+       // {
+       //     public DateTime dateTime { get; set; }
+       //     public double [] xValue { get; set; }
+       //     public double [] yValue { get; set; }
            
-        }
+       // }
     }
 }

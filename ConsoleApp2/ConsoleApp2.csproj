@@ -4,17 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A8AA0B63-3E76-439B-8F98-981A6D107E23}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AbstractEquipment</RootNamespace>
-    <AssemblyName>AbstractEquipment</AssemblyName>
+    <ProjectGuid>{36F9D9C2-09AA-46E4-96C7-F86952068841}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ConsoleApp2</RootNamespace>
+    <AssemblyName>ConsoleApp2</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,9 +22,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -43,23 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ABTECAudioAnalyzeEquipment\ATCAbstract.cs" />
-    <Compile Include="CANEquipment\CANAbstract.cs" />
-    <Compile Include="CANEquipment\USBCAN-2I.cs" />
-    <Compile Include="DataBaseAbstract\IBaseDAL.cs" />
-    <Compile Include="GPIB488Equipment\Agilent_66319D.cs" />
-    <Compile Include="GPIB488Equipment\Anritsu_MT8852B.cs" />
-    <Compile Include="GPIB488Equipment\GPIBAbstract.cs" />
-    <Compile Include="GPIB488Equipment\IO488Resource.cs" />
-    <Compile Include="GPIB488Equipment\JUNGJIN_SG1501B.cs" />
-    <Compile Include="RS232Equipment\BT001.cs" />
-    <Compile Include="RS232Equipment\M2.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RS232Equipment\ES4600AT.cs" />
-    <Compile Include="RS232Equipment\ShieldBox.cs" />
-    <Compile Include="RS232Equipment\AbstractRS232.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AbstractEquipment\AbstractEquipment.csproj">
+      <Project>{A8AA0B63-3E76-439B-8F98-981A6D107E23}</Project>
+      <Name>AbstractEquipment</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BaseModule\BaseModule.csproj">
       <Project>{1d70bf2b-c732-4b53-8bed-9869be6073b3}</Project>
       <Name>BaseModule</Name>
