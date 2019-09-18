@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -8,9 +9,17 @@ using System.Threading.Tasks;
 
 namespace BaseModule.Helper
 {
-    class SqlHelper
+    public class SQLHelper
     {
-        public static T Get<T>(string connstr, int id) where T : class
+        static string connstring = ConfigurationManager.ConnectionStrings["connstring"].ConnectionString;
+
+        /// <summary>
+        /// 获取实体单行数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static T GetT<T>(int id)
         {
             Type type = typeof(T);
             object obj = Activator.CreateInstance(type);
@@ -25,27 +34,45 @@ namespace BaseModule.Helper
                 {
                     foreach (var item in type.GetProperties())
                     {
-                        item.SetValue(inst, reader[item.Name]);
+                        if (reader[item.Name] is DBNull)
+                        {
+                            item.SetValue(obj, null);
+                        }
+                        item.SetValue(obj, reader[item.Name]);
                     }
                 }
             }
-            return (T)inst;
+            return (T)obj;
         }
 
-        public static int ExecuteNonQuery(String connectionString, String commandText,
-         CommandType commandType, params SqlParameter[] parameters)
+        /// <summary>
+        /// 获取实体列表数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static IEnumerable<T> GetEntitylist<T>() where T : BaseModel
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            Type type = typeof(T);
+            string cloumsstring = string.Join(",", type.GetProperties().Select(p => string.Format($"[{p.Name}]")));
+            string sqlString = string.Format($"select {cloumsstring} from {type.Name}");
+            List<T> datalist = new List<T>();
+            using (SqlConnection conn = new SqlConnection(connstring))
             {
-                using (SqlCommand cmd = new SqlCommand(commandText, conn))
+                conn.Open();
+                SqlCommand command = new SqlCommand(sqlString, conn);
+                SqlDataReader read = command.ExecuteReader();
+                while (read.Read())
                 {
-                    // There're three command types: StoredProcedure, Text, TableDirect. The TableDirect   
-                    // type is only for OLE DB.    
-                    cmd.CommandType = commandType;
-                    cmd.Parameters.AddRange(parameters);
-
-                    conn.Open();
-                    return cmd.ExecuteNonQuery();
+                    var t = Activator.CreateInstance(type);
+                    foreach (var item in type.GetProperties())
+                    {
+                        if (read[item.Name] is DBNull)
+                        {
+                            item.SetValue(t, null);
+                        }
+                        item.SetValue(t, read[item.Name]);
+                    }
+                    datalist.Add(t as T);
                 }
             }
             return datalist;

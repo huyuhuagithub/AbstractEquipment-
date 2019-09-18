@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using BaseModule.Helper.ConvertFrom;
 namespace AbstractEquipment.CANEquipment
 {
-    public class USBCAN_2I : CANAbstract
+    public unsafe class USBCAN_2I : CANAbstract
     {
 
         protected struct VCI_INIT_CONFIG
@@ -68,7 +68,7 @@ namespace AbstractEquipment.CANEquipment
         static protected extern UInt32 VCI_GetReceiveNum(UInt32 DeviceType, UInt32 DeviceIndex, UInt32 CANIndex);
 
         [DllImport("controlcan.dll", CharSet = CharSet.Ansi)]
-        static protected extern UInt32 VCI_Receive(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, IntPtr pReceive, UInt32 Len, Int32 WaitTime);
+        static protected extern UInt32 VCI_Receive(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, VCI_CAN_OBJ* pReceive, UInt32 Len, Int32 WaitTime);
 
         [DllImport("controlcan.dll")]
         static protected extern UInt32 VCI_Transmit(UInt32 DeviceType, UInt32 DeviceIndex, UInt32 CANIndex, ref VCI_CAN_OBJ pSend, UInt32 Len);
@@ -76,41 +76,75 @@ namespace AbstractEquipment.CANEquipment
 
         unsafe protected string ReceiveData(uint FilterID, int timeout, uint deviceType, uint deviceIndex, uint cANIndex)
         {
-
             string dataStrList = $"读取{FilterID}失败！";
-            List<uint> uintlist = new List<uint>();
-            var cancelTokenSource = new CancellationTokenSource(timeout);
-            if (IsOpen) //是否打开CAN
+           
+            uint num = VCI_GetReceiveNum(deviceType, deviceIndex, cANIndex);
+            if (num > 0)
             {
-                while (!cancelTokenSource.IsCancellationRequested)//设置读取超时
+                var cancelTokenSource = new CancellationTokenSource(timeout);
+                List<byte> Data_Frame = new List<byte>();
+                if (IsOpen) //是否打开CAN
                 {
-                    UInt32 con_maxlen = 50;
-                    int size = Marshal.SizeOf(typeof(VCI_CAN_OBJ));
-                    IntPtr pt = Marshal.AllocHGlobal(size * (int)con_maxlen);
-                    uint result = VCI_Receive(deviceType, deviceIndex, cANIndex, pt, con_maxlen, 100);
-                    for (uint i = 0; i < result; i++)
+                    while (!cancelTokenSource.IsCancellationRequested)//设置读取超时
                     {
-                        
-                        VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((uint)pt + i * size), typeof(VCI_CAN_OBJ));
-                        if (obj.ID == FilterID)
-                        {
-                            if (obj.RemoteFlag == 0)
-                            {
-                                List<uint> temp = new List<uint>();
-                                byte len = (byte)(obj.DataLen % 9);
-                                byte j = 0;
-                                if (j++ < len)
-                                {
-                                    for (int d = 0; d < len; d++)
-                                    {
-                                        temp.Add(obj.Data[d]);
-                                    }
-                                    temp.RemoveRange(0, 2);//去除CAN协议头俩位数据（东峻专用）
-                                    uintlist.AddRange(temp);
-                                }
-                            }
+                        #region .net 
+                        //UInt32 con_maxlen = 50;
+                        //int size = Marshal.SizeOf(typeof(VCI_CAN_OBJ));
+                        //IntPtr pt = Marshal.AllocHGlobal(size * (int)con_maxlen);
+                        //uint result = VCI_Receive(deviceType, deviceIndex, cANIndex, pt, con_maxlen, 100);
+                        //for (uint i = 0; i < result; i++)
+                        //{
+                        //    VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((uint)pt + i * size), typeof(VCI_CAN_OBJ));
+                        //    if (obj.ID == FilterID)
+                        //    {
+                        //        if (obj.RemoteFlag == 0)
+                        //        {
+                        //            List<uint> temp = new List<uint>();
+                        //            byte len = (byte)(obj.DataLen % 9);
+                        //            byte j = 0;
+                        //            if (j++ < len)
+                        //            {
+                        //                for (int d = 0; d < len; d++)
+                        //                {
+                        //                    temp.Add(obj.Data[d]);
+                        //                }
+                        //                temp.RemoveRange(0, 2);//去除CAN协议头俩位数据（东峻专用）
+                        //                uintlist.AddRange(temp);
+                        //            }
+                        //        }
 
+                        //    }
+                        #endregion
+
+                        #region 指针
+
+                        VCI_CAN_OBJ[] canObj = new VCI_CAN_OBJ[100];
+                        fixed (VCI_CAN_OBJ* pcanObj = canObj)
+                        {
+                            VCI_CAN_OBJ* pNewcanObj = pcanObj;
+                            int szie = sizeof(VCI_CAN_OBJ) * canObj.Length;
+                            uint result = VCI_Receive(deviceType, deviceIndex, cANIndex, pcanObj, 100, 400);
+                            for (uint i = 0; i < result; i++)
+                            {
+                                if (pNewcanObj->ID == FilterID)//判断是否为过滤的ID
+                                {
+                                    if (pNewcanObj->RemoteFlag == 0)//判断是否为远程幁
+                                    {
+                                        List<byte> temp = new List<byte>();
+                                        byte* pdata = pNewcanObj->Data + 2;//每一帧的前两位去掉（帧头和长度）
+                                        for (int t = 0; t < 6; t++)
+                                        {
+                                            temp.Add(*pdata);
+                                            pdata++;
+                                        }
+                                        Data_Frame.AddRange(temp);
+                                    }
+                                }
+                                pNewcanObj++;
+                            }
                         }
+                        #endregion
+
                         #region old
                         //string dataStr = string.Empty;
                         //dataStr += Convert.ToString(obj.ID, 16);
@@ -161,12 +195,11 @@ namespace AbstractEquipment.CANEquipment
                     }
 
                 }
-                if (uintlist.Count > 0)
+                if (Data_Frame.Count > 0)
                 {
-                    uintlist.RemoveRange(0, 2);
-                    return dataStrList = ConvertFrom.ToHexString(uintlist.ToArray());
+                    Data_Frame.RemoveRange(0, 2);
+                    return dataStrList = ConvertFrom.ToHexString(Data_Frame.ToArray());
                 }
-
             }
             return dataStrList;
         }
@@ -189,9 +222,8 @@ namespace AbstractEquipment.CANEquipment
                 List<byte> bytelist = new List<byte>();
                 for (int t = 0; t < len; t++)
                 {
-                    bytelist.Add(System.Convert.ToByte("0x" + strdata.Substring(t * 3, 2), 16));
+                    bytelist.Add(Convert.ToByte("0x" + strdata.Substring(t * 3, 2), 16));
                     sendobj.Data[t] = bytelist[t];
-
                 }
                 if (VCI_Transmit(deviceType, deviceIndex, cANIndex, ref sendobj, 1) == 1)
                 {
@@ -202,6 +234,7 @@ namespace AbstractEquipment.CANEquipment
             return IsTransmitSuccess;
 
         }
+
         protected void ResetCAN(uint DeviceType, uint DeviceIndex, uint CANIndex)
         {
             uint i = VCI_ResetCAN(DeviceType, DeviceIndex, CANIndex);
@@ -245,18 +278,42 @@ namespace AbstractEquipment.CANEquipment
         }
         public override string Query(string data, uint filterID, uint deviceType, uint deviceIndex, uint cANIndex, uint frameid)
         {
-           bool b= TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
-            return ReceiveData(filterID, 800, deviceType, deviceIndex, cANIndex);
+            bool b = TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
+            return ReceiveData(filterID, 500, deviceType, deviceIndex, cANIndex);
         }
 
-        public override string Read(uint command, uint deviceType, uint deviceIndex, uint cANIndex)
+        public override string Read(uint command, int timeout, uint deviceType, uint deviceIndex, uint cANIndex)
         {
-           return ReceiveData(command, 500, deviceType, deviceIndex, cANIndex);
+            return ReceiveData(command, timeout, deviceType, deviceIndex, cANIndex);
         }
         public override void Write(string data, uint deviceType, uint deviceIndex, uint cANIndex, uint frameid)
         {
             TransmitData(data, deviceType, deviceIndex, cANIndex, frameid);
         }
 
+        private static List<VCI_CAN_OBJ> NewMethod(List<byte[]> data)
+        {
+            List<VCI_CAN_OBJ> nCTYPE_CAN_FRAMEs = new List<VCI_CAN_OBJ>();
+            VCI_CAN_OBJ nCTYPE_CAN_FRAME1 = new VCI_CAN_OBJ();
+            for (int i = 0; i < data.Count; i++)
+            {
+                nCTYPE_CAN_FRAME1.ID = 0x77A;//帧ID
+                nCTYPE_CAN_FRAME1.SendType = 0;
+                nCTYPE_CAN_FRAME1.RemoteFlag = 0;
+                nCTYPE_CAN_FRAME1.ExternFlag = 0;
+                nCTYPE_CAN_FRAME1.DataLen = 8;
+                fixed (byte* pdata = data[i])
+                {
+                    byte* pnewdata = pdata;
+                    for (int d = 0; d < 8; d++)
+                    {
+                        nCTYPE_CAN_FRAME1.Data[d] = *pnewdata;
+                        pnewdata++;
+                    }
+                }
+                nCTYPE_CAN_FRAMEs.Add(nCTYPE_CAN_FRAME1);
+            }
+            return nCTYPE_CAN_FRAMEs;
+        }
     }
 }

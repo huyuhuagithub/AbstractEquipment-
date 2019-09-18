@@ -136,6 +136,7 @@ namespace 东峻Dome
                     break;
                 }
             }
+
             #region 旧文件
             //updateTextBoxUI(Displytb, "查询开机完成:11 B5 00 00 00 00 00 00\r\n" + CANG(USBCAN2I, "11 B5 00 00 00 00 00 00") + "\r\n");
             //updateTextBoxUI(Displytb, "查询（ACC电压)信息:11 C0 00 00 00 00 00 00\r\n" + CANG(USBCAN2I, "11 C0 00 00 00 00 00 00") + "\r\n");
@@ -220,6 +221,7 @@ namespace 东峻Dome
         {
             datedataGridView.Invoke(new Action(() =>
             {
+                //ConvertFrom.HexStringToString(text, Encoding.ASCII);
                 dataGridView1.Rows[row].Cells[cell].Value = text;
             }));
         }
